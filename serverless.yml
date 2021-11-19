@@ -1,4 +1,4 @@
-service: start-workshop-eugene-test
+service: start-workshop-eugene
 
 provider:
   name: aws
@@ -59,6 +59,14 @@ functions:
           method: post
           integration: lambda
           cors: true
+  s3ToDynamoDB:
+    handler: api/s3ToDynamoDB/s3ToDynamoDB.s3ToDynamoDB
+    timeout: 900
+    events:
+      - s3:
+          bucket: ${file(env.yml):${opt:stage, self:provider.stage}.BUCKET_NAME}
+          event: s3:ObjectCreated:*
+          existing: true
 
 resources:
   Resources:
