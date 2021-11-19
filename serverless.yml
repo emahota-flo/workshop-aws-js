@@ -1,4 +1,4 @@
-service: start-workshop
+service: start-workshop-eugene-test
 
 provider:
   name: aws
@@ -15,6 +15,10 @@ provider:
         - dynamodb:*
       Resource:
         - arn:aws:dynamodb:*:*:table/${file(env.yml):${opt:stage, self:provider.stage}.FILE_LIST_TABLE}
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: "*"
 
 package:
   include:
@@ -46,6 +50,15 @@ functions:
           method: get
           integration: lambda
           cors: true
+  createFile:
+    handler: api/s3/createFile.createFile
+    timeout: 30
+    events:
+      - http:
+          path: api/s3/createFile
+          method: post
+          integration: lambda
+          cors: true
 
 resources:
   Resources:
@@ -62,6 +75,10 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${file(env.yml):${opt:stage, self:provider.stage}.BUCKET_NAME}
 
 plugins:
   - serverless-prune-plugin
