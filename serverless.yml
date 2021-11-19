@@ -8,27 +8,62 @@ provider:
 
   lambdaHashingVersion: 20201221
   region: us-east-1
-  profile: flo
+  profile: workshop-test
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${file(env.yml):${opt:stage, self:provider.stage}.FILE_LIST_TABLE}
 
 package:
   include:
     - .env
 
 custom:
+  prune:
+    automatic: true
+    number: 2
   envFiles:
     - env.yml
 
 functions:
-  hello:
-    handler: handler.hello
+  createItem:
+    handler: api/dynamoDB/createItem.createItem
     timeout: 30
     events:
       - http:
-          path: api/hello
+          path: api/dynamoDB/createItem
+          method: post
+          integration: lambda
+          cors: true
+  getFilesList:
+    handler: api/dynamoDB/getFilesList.getFilesList
+    timeout: 30
+    events:
+      - http:
+          path: api/dynamoDB/getFilesList
           method: get
           integration: lambda
           cors: true
 
+resources:
+  Resources:
+    FileList:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${file(env.yml):${opt:stage, self:provider.stage}.FILE_LIST_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
 plugins:
+  - serverless-prune-plugin
   - serverless-env-generator
   - serverless-offline
