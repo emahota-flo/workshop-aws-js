@@ -1,0 +1,12 @@
+{
+  "name": "start-workshop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "author": "Eugene",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "serverless-env-generator": "^1.4.1"
+  }
+}
